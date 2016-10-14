@@ -8,6 +8,10 @@ module Rack
         CONTENT_TYPE
       ).freeze
 
+      IGNORED_HEADERS = %w(
+        HTTP_HOST
+      ).freeze
+
       def build
         net_http_request_class.new(url).tap do |net_http_request|
           delegate_rack_headers_to(net_http_request)
@@ -52,6 +56,7 @@ module Rack
       def headers_from_rack_request(rack_request)
         rack_request.env
           .select  { |key, _| key.start_with?('HTTP_') || CONTENT_HEADERS.include?(key) }
+          .reject { |key, _| IGNORED_HEADERS.include?(key) }
           .collect { |key, value| [key.sub(/^HTTP_/, '').tr('_', '-'), value] }
       end
     end
