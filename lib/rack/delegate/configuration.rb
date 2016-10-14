@@ -7,7 +7,7 @@ module Rack
         config.actions
       end
 
-      attr_reader :actions
+      attr_reader :actions, :ssl_options
 
       def initialize
         @actions = []
@@ -15,10 +15,11 @@ module Rack
         @rewriter = Rewriter.new
         @changer = Rewriter.new
         @timeout = NetworkErrorResponse
+        @ssl_options = {use_ssl: true}
       end
 
       def from(pattern, to:, constraints: nil)
-        action = Action.new(pattern, Delegator.new(to, @rewriter, @changer, @timeout))
+        action = Action.new(pattern, Delegator.new(to, @rewriter, @changer, @timeout, @ssl_options))
         action = Rack::Timeout.new(action) if timeout?
 
         constraints = Array(constraints).concat(@constraints)
@@ -44,6 +45,10 @@ module Rack
       def timeout(response_object = nil, &block)
         @timeout = response_object if response_object
         @timeout = block if block
+      end
+
+      def ssl_options(options)
+        @ssl_options.merge!(options)
       end
 
       private

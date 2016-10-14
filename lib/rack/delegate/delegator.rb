@@ -3,11 +3,12 @@ require 'timeout_errors'
 module Rack
   module Delegate
     class Delegator
-      def initialize(url, uri_rewriter, net_http_request_rewriter, timeout_response)
+      def initialize(url, uri_rewriter, net_http_request_rewriter, timeout_response, ssl_options)
         @url = URI(url)
         @uri_rewriter = uri_rewriter
         @net_http_request_rewriter = net_http_request_rewriter
         @timeout_response = timeout_response
+        @ssl_options = ssl_options
       end
 
       def call(env)
@@ -26,7 +27,11 @@ module Rack
       private
 
       def net_http_options
-        [@url.host, @url.port, https: @url.scheme == 'https']
+        if @url.scheme == 'https'
+          [@url.host, @url.port, @ssl_options]
+        else
+          [@url.host, @url.port]
+        end
       end
 
       def convert_to_rack_response(http_response)
