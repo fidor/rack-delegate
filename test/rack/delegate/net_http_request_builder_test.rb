@@ -8,6 +8,7 @@ module Rack
         'REMOTE_ADDR' => '123.123.123.123',
         'HTTP_X_CUSTOM_HEADER' => '42',
         'HTTP_HOST' => 'example.com',
+        'HTTP_CONNECTION' => 'Keep-Alive',
         'CONTENT_TYPE' => 'application/json',
         'CONTENT_LENGTH' => '2',
         'rack.input' => StringIO.new('42')
@@ -21,8 +22,12 @@ module Rack
         assert_equal @@env['HTTP_X_CUSTOM_HEADER'], net_http_request['X-CUSTOM-HEADER']
       end
 
-      test "delegates all the Rack request headers but HTTP_HOST to avoid virtual host issues" do
+      test "delegates the Rack request headers but not HTTP_HOST to avoid virtual host issues" do
         assert_nil net_http_request['HOST']
+      end
+
+      test "delegates the Rack request headers but not HTTP_CONNECTION to avoid problems with persistent connections" do
+        assert_nil net_http_request['CONNECTION']
       end
 
       test "delegates all the content headers" do

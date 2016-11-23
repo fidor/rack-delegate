@@ -9,7 +9,7 @@ module Rack
       ).freeze
 
       IGNORED_HEADERS = %w(
-        HTTP_HOST
+        HTTP_HOST HTTP_CONNECTION
       ).freeze
 
       def build
