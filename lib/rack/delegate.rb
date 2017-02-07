@@ -13,10 +13,12 @@ module Rack
     autoload :Dispatcher, 'rack/delegate/dispatcher'
 
     class << self
-      attr_accessor :network_error_response
+      attr_accessor :network_error_response, :default_headers_callback
     end
     self.network_error_response = NetworkErrorResponse
 
+    # Waits for an Array to be returned as part of the header used 
+    # for delegating. Array needs to be [ [ HEADER_NAME, HEADER_VALUE]* ]
     def self.configure(&block)
       dispatcher = Dispatcher.configure(&block)
 
@@ -31,6 +33,15 @@ module Rack
           end
         end
       end
+    end
+
+    #
+    # Will execute the Rack::Delegate.default_headers_callback if set.
+    # This expects an hash to be returned to be used as default_headers
+    # in the forwarded request. This method expects the request env as 
+    # parameter
+    def self.default_headers(env)
+      Rack::Delegate.default_headers_callback && Rack::Delegate.default_headers_callback.call(env) || {}
     end
   end
 end

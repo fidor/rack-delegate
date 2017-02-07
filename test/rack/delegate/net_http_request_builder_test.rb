@@ -11,7 +11,8 @@ module Rack
         'HTTP_CONNECTION' => 'Keep-Alive',
         'CONTENT_TYPE' => 'application/json',
         'CONTENT_LENGTH' => '2',
-        'rack.input' => StringIO.new('42')
+        'rack.input' => StringIO.new('42'),
+        'action_dispatch.request_id' => '42'
       )
 
       @@request = Rack::Request.new(@@env)
@@ -41,6 +42,11 @@ module Rack
 
       test "strips /prefix from the request" do
         assert_equal 'http://example.com/foo/42', net_http_request.uri.to_s
+      end
+
+      test "header_callbacks as part of header" do
+        Rack::Delegate.default_headers_callback = Proc.new { |env| { 'X-Request-Id' => env['action_dispatch.request_id'] } }
+        assert_equal '42', net_http_request['X-REQUEST-ID']
       end
 
       def net_http_request

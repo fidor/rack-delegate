@@ -58,6 +58,11 @@ module Rack
           .select  { |key, _| key.start_with?('HTTP_') || CONTENT_HEADERS.include?(key) }
           .reject { |key, _| IGNORED_HEADERS.include?(key) }
           .collect { |key, value| [key.sub(/^HTTP_/, '').tr('_', '-'), value] }
+          .push(*headers_from_default_headers(rack_request.env))
+      end
+
+      def headers_from_default_headers(env)
+        Rack::Delegate.default_headers(env).to_a.map { |key,value| [ key.to_s.upcase, value ] } || []
       end
     end
   end
